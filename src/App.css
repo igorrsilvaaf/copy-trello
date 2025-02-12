@@ -7,6 +7,10 @@
   color: #B6C2CF;
   overflow: hidden;
   transition: background 0.3s;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
 }
 
 .header {
@@ -532,6 +536,10 @@
   border-radius: 4px;
   cursor: pointer;
   transition: transform 0.2s;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
 }
 
 .background-option:hover {
@@ -540,6 +548,11 @@
 
 .background-option.active {
   border: 2px solid #579DFF;
+}
+
+/* Para as imagens dentro do grid de seleção */
+.background-grid .background-option {
+  position: relative;
 }
 
 .custom-upload {

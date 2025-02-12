@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FiEdit2, FiTrash2, FiPlus, FiStar, FiUsers, FiFilter, FiMoreHorizontal } from 'react-icons/fi';
 import BackgroundSelector from './BackgroundSelector';
 import { backgrounds } from '../utils/backgrounds';
+import { useBackground } from '../hooks/useBackground';
 
 export default function TodoList() {
   const [lists, setLists] = useState([
@@ -20,7 +21,12 @@ export default function TodoList() {
   const [editingList, setEditingList] = useState(null);
   const [newCardTitle, setNewCardTitle] = useState('');
   const [addingCardToList, setAddingCardToList] = useState(null);
-  const [currentBackground, setCurrentBackground] = useState('default');
+  const { 
+    currentBackground, 
+    handleBackgroundChange, 
+    addCustomBackground,
+    getCurrentBackground 
+  } = useBackground();
 
   const handleSubmit = (e, listId) => {
     e.preventDefault();
@@ -107,26 +113,23 @@ export default function TodoList() {
     alert(`List ${listId} archived!`);
   };
 
-  const handleBackgroundChange = (bg) => {
-    setCurrentBackground(bg.id);
+  const getBackgroundStyle = () => {
+    const bg = getCurrentBackground();
+    if (!bg) return { backgroundColor: '#1a1c1f' };
+
     if (bg.type === 'image') {
-      document.documentElement.style.setProperty('--app-background', `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${bg.url})`);
-    } else {
-      document.documentElement.style.setProperty('--app-background', bg.color);
+      return {
+        background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${bg.url})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      };
     }
+
+    return { backgroundColor: bg.color };
   };
 
   return (
-    <div 
-      className="app" 
-      style={{ 
-        background: backgrounds.find(bg => bg.id === currentBackground)?.type === 'image' 
-          ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${backgrounds.find(bg => bg.id === currentBackground)?.url})`
-          : backgrounds.find(bg => bg.id === currentBackground)?.color,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
+    <div className="app" style={getBackgroundStyle()}>
       <div className="board-header">
         <h1>
           Project To-do
@@ -135,6 +138,7 @@ export default function TodoList() {
         <div className="header-actions">
           <BackgroundSelector 
             onSelect={handleBackgroundChange}
+            onCustomUpload={addCustomBackground}
             currentBackground={currentBackground}
           />
           <button className="header-button">

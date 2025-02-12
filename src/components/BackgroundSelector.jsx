@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FiImage, FiUpload } from 'react-icons/fi';
 import { backgrounds } from '../utils/backgrounds';
 
-export default function BackgroundSelector({ onSelect, currentBackground }) {
+export default function BackgroundSelector({ onSelect, onCustomUpload, currentBackground }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (bg) => {
@@ -20,7 +20,8 @@ export default function BackgroundSelector({ onSelect, currentBackground }) {
           type: 'image',
           url: e.target.result
         };
-        handleSelect(customBackground);
+        onCustomUpload(customBackground);
+        setIsOpen(false);
       };
       reader.readAsDataURL(file);
     }

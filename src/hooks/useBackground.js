@@ -39,8 +39,15 @@ export function useBackground() {
   };
 
   const addCustomBackground = (bg) => {
-    setCustomBackgrounds(prev => [...prev, bg]);
-    setCurrentBackground(bg.id);
+    const img = new Image();
+    img.onload = () => {
+      setCustomBackgrounds(prev => [...prev, bg]);
+      setCurrentBackground(bg.id);
+    };
+    img.onerror = () => {
+      alert('Não foi possível carregar a imagem. Tente outra imagem.');
+    };
+    img.src = bg.url;
   };
 
   const getAllBackgrounds = () => {

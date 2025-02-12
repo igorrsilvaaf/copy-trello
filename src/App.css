@@ -7,10 +7,26 @@
   color: #B6C2CF;
   overflow: hidden;
   transition: background 0.3s;
+  position: relative;
   background-position: center center !important;
   background-repeat: no-repeat !important;
   background-attachment: fixed !important;
   background-size: cover !important;
+}
+
+.app::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  filter: brightness(0.8);
+  z-index: -1;
 }
 
 .header {
@@ -286,19 +302,6 @@
 .task-card:active {
   cursor: grabbing;
 }
-
-.task-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.task-tag.backlog { background: #E2B203; color: #1D2125; }
-.task-tag.pending { background: #F87462; color: #1D2125; }
-.task-tag.progress { background: #60C6BE; color: #1D2125; }
 
 .task-content {
   display: flex;

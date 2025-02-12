@@ -84,7 +84,6 @@ export default function TodoList() {
       const newTask = {
         id: Date.now(),
         title: newCardTitle,
-        category: 'backlog',
         list: listId
       };
 
@@ -194,9 +193,6 @@ export default function TodoList() {
                     onDragStart={(e) => handleDragStart(e, task.id)}
                     onDragEnd={handleDragEnd}
                   >
-                    <div className={`task-tag ${task.category}`}>
-                      {task.category.toUpperCase()}
-                    </div>
                     <div className="task-content">
                       <span className="task-text">
                         {task.title}

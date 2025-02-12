@@ -12,19 +12,34 @@ export default function BackgroundSelector({ onSelect, onCustomUpload, currentBa
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
+    
+    if (!file) return;
+
+    // Verifica o tipo do arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione um arquivo de imagem válido.');
+      return;
+    }
+
+    const reader = new FileReader();
+    
+    reader.onload = () => {
+      const img = new Image();
+      
+      img.onload = () => {
         const customBackground = {
           id: `custom-${Date.now()}`,
           type: 'image',
-          url: e.target.result
+          url: img.src
         };
         onCustomUpload(customBackground);
         setIsOpen(false);
       };
-      reader.readAsDataURL(file);
-    }
+
+      img.src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
   };
 
   return (

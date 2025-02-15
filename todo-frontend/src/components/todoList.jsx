@@ -1,26 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiEdit2, FiTrash2, FiPlus, FiStar, FiUsers, FiFilter, FiMoreHorizontal } from 'react-icons/fi';
 import BackgroundSelector from './BackgroundSelector';
-import { backgrounds } from '../utils/backgrounds';
 import { useBackground } from '../hooks/useBackground';
+import api from '../services/api';
 
 export default function TodoList() {
-  const [lists, setLists] = useState([
-    { id: 'backlog', title: 'BACKLOG' },
-    { id: 'pending', title: 'PENDING' },
-    { id: 'blocked', title: 'BLOCKED' },
-    { id: 'progress', title: 'IN PROGRESS' },
-    { id: 'completed', title: 'COMPLETED' },
-    { id: 'canceled', title: 'CANCELED' }
-  ]);
-
+  const [lists, setLists] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(null);
-  const [currentList, setCurrentList] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null);
-  const [editingList, setEditingList] = useState(null);
   const [newCardTitle, setNewCardTitle] = useState('');
   const [addingCardToList, setAddingCardToList] = useState(null);
+  const [editingListId, setEditingListId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  
   const { 
     currentBackground, 
     handleBackgroundChange, 
@@ -28,23 +20,24 @@ export default function TodoList() {
     getCurrentBackground 
   } = useBackground();
 
-  const handleSubmit = (e, listId) => {
-    e.preventDefault();
-    if (newCardTitle.trim()) {
-      const newTask = {
-        id: Date.now(),
-        title: newCardTitle,
-        category: 'backlog',
-        list: listId
-      };
+  // Carregar listas e tarefas ao iniciar
+  useEffect(() => {
+    loadTodos();
+  }, []);
 
-      setTasks([newTask, ...tasks]);
-      setNewCardTitle('');
+  const loadTodos = async () => {
+    try {
+      const response = await api.get('/api/todos');
+      if (response.data) {
+        setLists(response.data.lists || []);
+        setTasks(response.data.tasks || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar todos:', error);
     }
   };
 
   const editTask = (task) => {
-    setCurrentTask(task);
     setNewCardTitle(task.title);
   };
 
@@ -74,9 +67,24 @@ export default function TodoList() {
     ));
   };
 
-  const addNewList = () => {
-    const newListId = `list-${Date.now()}`;
-    setLists([...lists, { id: newListId, title: 'NEW LIST' }]);
+  const addNewList = async () => {
+    try {
+      const newList = { 
+        id: `list-${Date.now()}`, 
+        title: 'NEW LIST',
+        position: lists.length 
+      };
+      
+      const updatedLists = [...lists, newList];
+      await api.put('/api/todos', { 
+        lists: updatedLists,
+        tasks: tasks 
+      });
+      
+      setLists(updatedLists);
+    } catch (error) {
+      console.error('Erro ao adicionar lista:', error);
+    }
   };
 
   const handleAddCard = (listId) => {
@@ -127,6 +135,29 @@ export default function TodoList() {
     return { backgroundColor: bg.color };
   };
 
+  const startEditingList = (list) => {
+    setEditingListId(list.id);
+    setEditingTitle(list.title);
+  };
+
+  const saveListTitle = async (listId) => {
+    try {
+      const updatedLists = lists.map(list => 
+        list.id === listId ? { ...list, title: editingTitle } : list
+      );
+
+      await api.put('/api/todos', {
+        lists: updatedLists,
+        tasks: tasks
+      });
+
+      setLists(updatedLists);
+      setEditingListId(null);
+    } catch (error) {
+      console.error('Erro ao salvar título:', error);
+    }
+  };
+
   return (
     <div className="app" style={getBackgroundStyle()}>
       <div className="board-header">
@@ -170,7 +201,24 @@ export default function TodoList() {
             onDrop={(e) => handleDrop(e, list.id)}
           >
             <div className="list-header">
-              <h2 className="list-title">{list.title}</h2>
+              {editingListId === list.id ? (
+                <input
+                  type="text"
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onBlur={() => saveListTitle(list.id)}
+                  onKeyPress={(e) => e.key === 'Enter' && saveListTitle(list.id)}
+                  className="list-title-input"
+                  autoFocus
+                />
+              ) : (
+                <h2 
+                  className="list-title"
+                  onClick={() => startEditingList(list)}
+                >
+                  {list.title}
+                </h2>
+              )}
               <button className="list-menu" onClick={() => toggleMenu(list.id)}>
                 <FiMoreHorizontal />
               </button>

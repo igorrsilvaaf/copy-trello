@@ -7,7 +7,7 @@ export const backgrounds = [
   { 
     id: 'mountains',
     type: 'image',
-    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4'
+    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&w=1000&q=80'
   },
   { 
     id: 'ocean',

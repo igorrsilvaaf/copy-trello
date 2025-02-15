@@ -36,9 +36,24 @@ export const updateTodo = async (req, res) => {
 
 export const deleteTodo = async (req, res) => {
   try {
-    await Todo.findOneAndDelete({ user: req.userId });
+    await Todo.findOneAndDelete({ user: req.userId, id: req.params.id });
     res.send();
   } catch (err) {
     res.status(400).json({ error: 'Error deleting todo' });
+  }
+};
+
+export const deleteTask = async (req, res) => {
+  const { taskId } = req.params;
+  try {
+    const todo = await Todo.findOne({ user: req.userId });
+    if (!todo) return res.status(404).json({ error: 'Todo not found' });
+
+    todo.tasks = todo.tasks.filter(task => task.id !== taskId);
+    await todo.save();
+
+    res.send();
+  } catch (err) {
+    res.status(400).json({ error: 'Error deleting task' });
   }
 }; 

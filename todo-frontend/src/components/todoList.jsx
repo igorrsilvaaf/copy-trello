@@ -39,10 +39,38 @@ export default function TodoList() {
 
   const editTask = (task) => {
     setNewCardTitle(task.title);
+    setAddingCardToList(task.list);
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const saveTask = async (taskId) => {
+    try {
+      const updatedTasks = tasks.map(task => 
+        task.id === taskId ? { ...task, title: newCardTitle } : task
+      );
+
+      await api.put('/api/todos', {
+        lists: lists,
+        tasks: updatedTasks
+      });
+
+      setTasks(updatedTasks);
+      setNewCardTitle('');
+      setAddingCardToList(null);
+    } catch (error) {
+      console.error('Erro ao salvar tarefa:', error);
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      // Remover a tarefa do banco de dados
+      await api.delete(`/api/todos/${id}`);
+
+      // Atualizar o estado local
+      setTasks(tasks.filter(task => task.id !== id));
+    } catch (error) {
+      console.error('Erro ao deletar tarefa:', error);
+    }
   };
 
   const handleDragStart = (e, taskId) => {
@@ -87,7 +115,7 @@ export default function TodoList() {
     }
   };
 
-  const handleAddCard = (listId) => {
+  const handleAddCard = async (listId) => {
     if (newCardTitle.trim()) {
       const newTask = {
         id: Date.now(),
@@ -95,9 +123,19 @@ export default function TodoList() {
         list: listId
       };
 
-      setTasks([newTask, ...tasks]);
-      setNewCardTitle('');
-      setAddingCardToList(null);
+      try {
+        // Salvar a nova tarefa no banco de dados
+        await api.put('/api/todos', {
+          lists: lists,
+          tasks: [...tasks, newTask] // Adiciona a nova tarefa
+        });
+
+        setTasks([...tasks, newTask]);
+        setNewCardTitle('');
+        setAddingCardToList(null);
+      } catch (error) {
+        console.error('Erro ao adicionar tarefa:', error);
+      }
     }
   };
 
@@ -112,8 +150,17 @@ export default function TodoList() {
     }
   };
 
-  const deleteList = (listId) => {
-    setLists(lists.filter(list => list.id !== listId));
+  const deleteList = async (listId) => {
+    try {
+      // Remover a lista do banco de dados
+      await api.delete(`/api/todos/${listId}`);
+
+      // Atualizar o estado local
+      setLists(lists.filter(list => list.id !== listId));
+      setTasks(tasks.filter(task => task.list !== listId)); // Remover tarefas associadas
+    } catch (error) {
+      console.error('Erro ao deletar lista:', error);
+    }
   };
 
   const archiveList = (listId) => {
@@ -242,9 +289,21 @@ export default function TodoList() {
                     onDragEnd={handleDragEnd}
                   >
                     <div className="task-content">
-                      <span className="task-text">
-                        {task.title}
-                      </span>
+                      {addingCardToList === task.list ? (
+                        <input
+                          type="text"
+                          value={newCardTitle}
+                          onChange={(e) => setNewCardTitle(e.target.value)}
+                          onBlur={() => saveTask(task.id)}
+                          onKeyPress={(e) => e.key === 'Enter' && saveTask(task.id)}
+                          className="task-input"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="task-text" onClick={() => editTask(task)}>
+                          {task.title}
+                        </span>
+                      )}
                       <div className="task-actions">
                         <button className="action-button" onClick={() => editTask(task)}>
                           <FiEdit2 size={14} />

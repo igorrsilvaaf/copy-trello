@@ -13,7 +13,7 @@ router.post('/login', authController.login);
 router.use('/todos', authMiddleware);
 router.get('/todos', todoController.getTodos);
 router.post('/todos', todoController.createTodo);
-router.put('/todos/:id', todoController.updateTodo);
+router.put('/todos', todoController.updateTodo);
 router.delete('/todos/:id', todoController.deleteTodo);
 
 export default router; 

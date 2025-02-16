@@ -15,5 +15,6 @@ router.get('/todos', todoController.getTodos);
 router.post('/todos', todoController.createTodo);
 router.put('/todos', todoController.updateTodo);
 router.delete('/todos/:id', todoController.deleteTodo);
+router.delete('/todos/:listId/tasks/:taskId', todoController.deleteTask);
 
 export default router; 
